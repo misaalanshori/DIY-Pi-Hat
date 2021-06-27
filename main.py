@@ -9,19 +9,25 @@ import socket
 from datetime import datetime
 
 from apps import piInfo
+from config import *
+from funcs import centerText
+from funcs import posOffset as po
 
-interface = spi(port=0, device=0, gpio_DC=23, gpio_RST=24)
+interface = spi(port=dispPort, device=dispDev, gpio_DC=dispDC, gpio_RST=dispRST)
 disp = pcd8544(serial_interface=interface)
-disp.capabilities(84, 48, 2)
-disp.contrast(60)
+disp.capabilities(dispWidth, dispHeight, dispRotation)
+disp.contrast(dispContrast)
 disp.clear()
 
-font = ImageFont.truetype("TinyPixy.ttf", 10)
+font = ImageFont.truetype(fontFile, fontSize)
 
 appList = [piInfo]
+currentPage = 0
 
 while True:
 	with canvas(disp) as draw:
 		draw.rectangle(disp.bounding_box, outline="white")
-		appList[0](draw, font)
+		draw.rectangle((0, dispHeight, dispWidth, dispHeight - 8), outline="white", fill="white")
+		centerText(draw, po(0,40)[1], "{}/{}".format(currentPage+1, len(appList)), "black", font)
+		appList[currentPage](draw, font)
 	sleep(0.25)
