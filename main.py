@@ -4,6 +4,7 @@ from luma.core.render import canvas
 from time import sleep
 from PIL import ImageFont
 import wiringpi
+import importlib
 
 import apps
 from config import *
@@ -32,8 +33,25 @@ bRight = inout.buttonPoller(buttRight)
 
 font = ImageFont.truetype(fontFile, fontSize)
 
-appList = [apps.piInfo(), apps.clock()]
-currentPage = 1
+
+ListOfApps = ["apps.piInfo", "apps.clock"]
+
+
+appList = []
+currentPage = 0
+
+def initApps():
+	global appList
+	appListTemp = []
+	for i in ListOfApps:
+		exec("appListTemp.append({}())".format(i))
+	appList = appListTemp
+initApps()
+
+def reloadApps():
+	global apps
+	apps = importlib.reload(apps)
+	initApps()
 
 def menuNext():
 	global currentPage
@@ -52,11 +70,20 @@ def menuPrev():
 bLeft.callbacks["pressCall"] = menuPrev
 bRight.callbacks["pressCall"] = menuNext
 bMenu.callbacks["holdCall"] = backlight.toggle
+bDown.callbacks["holdCall"] = reloadApps
 
-while True:
-	with canvas(disp) as draw:
-		draw.rectangle(disp.bounding_box, outline="white")
-		draw.rectangle((0, dispHeight, dispWidth, dispHeight - 8), outline="white", fill="white")
-		centerText(draw, po(0,40)[1], "{}/{}".format(currentPage+1, len(appList)), "black", font)
-		appList[currentPage].render(draw, font)
-	sleep(0.25)
+def main():
+	while True:
+		with canvas(disp) as draw:
+			draw.rectangle(disp.bounding_box, outline="white")
+			draw.rectangle((0, dispHeight, dispWidth, dispHeight - 8), outline="white", fill="white")
+			centerText(draw, po(0,40)[1], "{}/{}".format(currentPage+1, len(appList)), "black", font)
+			appList[currentPage].render(draw, font)
+		sleep(0.25)
+
+
+if __name__ == "__main__":
+	try:
+		main()
+	except KeyboardInterrupt:
+		exit()

@@ -66,7 +66,7 @@ class buttonPoller:
 		while not self.kill:
 			currentState = 0
 			tempState = wiringpi.digitalRead(self.pinNum)
-			if (self.lastState == 0) and (tempState == 1): # Detects first initial first
+			if (self.lastState == 0) and (tempState == 1): # Detects first initial press
 				self.lastState = tempState
 				currentState = 1
 			elif (self.lastState == 1) and (tempState == 1): # Detects If button still being pressed
