@@ -21,11 +21,10 @@ class togglePin:
 		wiringpi.digitalWrite(self.pinNum, self.state)
 
 class buttonPoller:
-	def __init__(self, pinNum, pressCall = lambda : None, holdCall = lambda : None, sPressCall = lambda : None, repeatCall = lambda : None,):
+	def __init__(self, pinNum, pinMode = 0 , pressCall = lambda : None, holdCall = lambda : None, sPressCall = lambda : None, repeatCall = lambda : None,):
 		self.stateHistory = "0000000000000000"
 		self.lastState = 0
 		self.pinNum = pinNum
-		wiringpi.pinMode(pinNum, 0)
 		self.callbacks = {
 			"pressCall": pressCall,
 			"holdCall": holdCall,
@@ -33,16 +32,40 @@ class buttonPoller:
 			"repeatCall": repeatCall,
 		}
 		self.kill = False
-		self.__thread = threading.Thread(target=self.__poller,args=(self.pinNum, self.callbacks))
+
+		wiringpi.pinMode(pinNum, pinMode)
+		self.__thread = threading.Thread(target=self.__poller)
 		self.__thread.start()
+
+	def debug(self):
+		def pCall(self):
+			print(self.pinNum + " Pressed")
+		def hCall(self):
+			print(self.pinNum + " Held")
+		def sPCall(self):
+			print(self.pinNum + " SPressed")
+		def rCall(self):
+			print(self.pinNum + " Repeat")
+		
+
+		self.__callbackOG = self.callbacks
+		self.callbacks = {
+			"pressCall": pCall,
+			"holdCall": hCall,
+			"sPressCall": sPCall,
+			"repeatCall": rCall,
+		}
+	
+	def debugOff(self):
+		self.callbacks = self.__callbackOG
 
 	def __del__(self):
 		self.kill = True
 
-	def __poller(self, pinNum, callbacks):
+	def __poller(self):
 		while not self.kill:
 			currentState = 0
-			tempState = wiringpi.digitalRead(pinNum)
+			tempState = wiringpi.digitalRead(self.pinNum)
 			if (self.lastState == 0) and (tempState == 1): # Detects first initial first
 				self.lastState = tempState
 				currentState = 1
@@ -54,17 +77,20 @@ class buttonPoller:
 				currentState = 3
 			else:
 				currentState = 0
+
 			self.stateHistory += str(currentState)
-			if len(self.stateHistory) > 16:
-				self.stateHistory = self.stateHistory[-16:]
+			self.stateHistory = self.stateHistory[-16:]
 			
 			if self.stateHistory[-1] == "3":
-				if self.stateHistory[-7:] == ("2"*6+"3"):
-					callbacks["holdCall"]()
+				if self.stateHistory[-4:] == ("2"*3+"3"):
+					self.callbacks["holdCall"]()
 				else:
-					callbacks["pressCall"]()
+					self.callbacks["pressCall"]()
+
 			if self.stateHistory[-1] == "2":
-				callbacks["repeatCall"]()
+				self.callbacks["repeatCall"]()
+
 			if self.stateHistory[-1] == "1":
-				callbacks["sPressCall"]()
-			sleep(0.05)
+				self.callbacks["sPressCall"]()
+
+			sleep(0.1)

@@ -7,6 +7,14 @@ dispPort = 0
 dispDev = 0
 dispDC = 23
 dispRST = 24
+dispBL = 18
+
+buttSelect = 16 
+buttUp = 6
+buttDown = 27
+buttLeft = 17
+buttRight = 22
+buttMenu = 5
 
 fontFile = "TinyPixy.ttf"
 fontSize = 10
