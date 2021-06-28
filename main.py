@@ -24,17 +24,9 @@ wiringpi.pullUpDnControl(6, 1)
 backlight = inout.togglePin(dispBL)
 backlight.on()
 
-bSelect = inout.buttonPoller(buttSelect)
-bMenu = inout.buttonPoller(buttMenu)
-bUp = inout.buttonPoller(buttUp)
-bDown = inout.buttonPoller(buttDown)
-bLeft = inout.buttonPoller(buttLeft)
-bRight = inout.buttonPoller(buttRight)
+
 
 font = ImageFont.truetype(fontFile, fontSize)
-
-
-ListOfApps = ["apps.piInfo", "apps.clock"]
 
 
 appList = []
@@ -43,8 +35,8 @@ currentPage = 0
 def initApps():
 	global appList
 	appListTemp = []
-	for i in ListOfApps:
-		exec("appListTemp.append({}())".format(i))
+	for i in apps.appList:
+		appListTemp.append(i())
 	appList = appListTemp
 initApps()
 
@@ -67,10 +59,24 @@ def menuPrev():
 	else:
 		currentPage -= 1
 
-bLeft.callbacks["pressCall"] = menuPrev
-bRight.callbacks["pressCall"] = menuNext
-bMenu.callbacks["holdCall"] = backlight.toggle
-bDown.callbacks["holdCall"] = reloadApps
+
+bPool = inout.buttonPool({
+	"select": inout.buttonPoller(buttSelect),
+	"menu": inout.buttonPoller(buttMenu),
+	"up": inout.buttonPoller(buttUp),
+	"down": inout.buttonPoller(buttDown),
+	"left": inout.buttonPoller(buttLeft),
+	"right": inout.buttonPoller(buttRight),
+})
+
+bPool.update({
+	"left": {"pressCall": menuPrev},
+	"right": {"pressCall": menuNext},
+	"menu": {"holdCall": backlight.toggle},
+	"down": {"holdCall": reloadApps}
+})
+
+bPool.setOriginal()
 
 def main():
 	while True:
@@ -79,7 +85,7 @@ def main():
 			draw.rectangle((0, dispHeight, dispWidth, dispHeight - 8), outline="white", fill="white")
 			centerText(draw, po(0,40)[1], "{}/{}".format(currentPage+1, len(appList)), "black", font)
 			appList[currentPage].render(draw, font)
-		sleep(0.25)
+		sleep(0.5)
 
 
 if __name__ == "__main__":

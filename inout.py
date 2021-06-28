@@ -1,6 +1,7 @@
 import wiringpi
 import threading
 from time import sleep
+from funcs import shallowCopyDict
 
 wiringpi.wiringPiSetupGpio()
 
@@ -19,6 +20,31 @@ class togglePin:
 	def toggle(self):
 		self.state = not self.state
 		wiringpi.digitalWrite(self.pinNum, self.state)
+	
+class buttonPool:
+	def __init__(self, buttons = {}):
+		self.buttons = buttons
+		self.callbacks = {}
+		for button in buttons:
+			self.callbacks[button] = {}
+			for calls in buttons[button].callbacks:
+				self.callbacks[button][calls] = buttons[button].callbacks[calls]
+		self.__originalCalls = shallowCopyDict(self.callbacks)
+
+	def update(self, callbacks):
+		self.callbacks = shallowCopyDict(callbacks)
+		for button in callbacks:
+			for calls in callbacks[button]:
+				self.buttons[button].callbacks[calls] = callbacks[button][calls]
+
+	def setOriginal(self):
+		self.__originalCalls = shallowCopyDict(self.callbacks)
+
+	def resetCallbacks(self):
+		self.update(self.__originalCalls)
+
+
+
 
 class buttonPoller:
 	def __init__(self, pinNum, pinMode = 0 , pressCall = lambda : None, holdCall = lambda : None, sPressCall = lambda : None, repeatCall = lambda : None,):
@@ -82,7 +108,7 @@ class buttonPoller:
 			self.stateHistory = self.stateHistory[-16:]
 			
 			if self.stateHistory[-1] == "3":
-				if self.stateHistory[-4:] == ("2"*3+"3"):
+				if self.stateHistory[-7:] == ("2"*6+"3"):
 					self.callbacks["holdCall"]()
 				else:
 					self.callbacks["pressCall"]()
@@ -93,4 +119,4 @@ class buttonPoller:
 			if self.stateHistory[-1] == "1":
 				self.callbacks["sPressCall"]()
 
-			sleep(0.1)
+			sleep(0.05)

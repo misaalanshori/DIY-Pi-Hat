@@ -35,3 +35,6 @@ class clock:
 		centerText(canvas, po(0, 10)[1], datetime.now(pytz.timezone(timezone)).strftime("%A"), "white", font)
 		centerText(canvas, po(0, 16)[1], datetime.now(pytz.timezone(timezone)).strftime("%d %B"), "white", font)
 		centerText(canvas, po(0, 22)[1], datetime.now(pytz.timezone(timezone)).strftime("%Y"), "white", font)
+
+
+appList = [piInfo, clock]

@@ -1,0 +1,4 @@
+*.swp
+*.old
+__pycache__/
+__pycache__
