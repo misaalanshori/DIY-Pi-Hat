@@ -19,3 +19,27 @@ def shallowCopyDict(dicti):
 	for i in dicti:
 		newDict[i] = dicti[i]
 	return newDict
+
+
+def badDeepCopy(input):
+	if hasattr(input, "__iter__"):
+		# print(type(input))
+		temp = type(input)()
+
+		if type(input) == set:
+			adder = temp.add
+		elif type(input) == list:
+			adder = temp.append
+		elif type(input) == str:
+			return input
+		for obj in input:
+			if type(input) != dict:
+				adder(badDeepCopy(obj))
+			elif type(input) == dict:
+				temp[obj] = badDeepCopy(input[obj])
+				
+		return temp
+	else:
+		return input
+			
+

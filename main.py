@@ -32,13 +32,19 @@ font = ImageFont.truetype(fontFile, fontSize)
 appList = []
 currentPage = 0
 
+gVariables = {
+	"gSDelay": 0.033
+}
+
+mainLoopCallbacks = set()
+
 def initApps():
 	global appList
 	appListTemp = []
 	for i in apps.appList:
-		appListTemp.append(i())
+		appListTemp.append(i(disp, gVariables, font, bPool))
 	appList = appListTemp
-initApps()
+
 
 def reloadApps():
 	global apps
@@ -59,33 +65,46 @@ def menuPrev():
 	else:
 		currentPage -= 1
 
+def joinApp():
+	appList[currentPage].joinApp()
 
-bPool = inout.buttonPool({
-	"select": inout.buttonPoller(buttSelect),
-	"menu": inout.buttonPoller(buttMenu),
-	"up": inout.buttonPoller(buttUp),
-	"down": inout.buttonPoller(buttDown),
-	"left": inout.buttonPoller(buttLeft),
-	"right": inout.buttonPoller(buttRight),
+bPool = inout.buttonPoller({
+	"select": inout.buttonClass(buttSelect),
+	"menu": inout.buttonClass(buttMenu),
+	"up": inout.buttonClass(buttUp),
+	"down": inout.buttonClass(buttDown),
+	"left": inout.buttonClass(buttLeft),
+	"right": inout.buttonClass(buttRight),
 })
 
 bPool.update({
 	"left": {"pressCall": menuPrev},
 	"right": {"pressCall": menuNext},
 	"menu": {"holdCall": backlight.toggle},
-	"down": {"holdCall": reloadApps}
+	"down": {"holdCall": reloadApps},
+	"select": {"pressCall": [joinApp]},
 })
 
 bPool.setOriginal()
 
+initApps()
 def main():
 	while True:
+		tempCalls = bPool.mainLoopCallbackBuffer.copy()
+		bPool.mainLoopCallbackBuffer.clear()
+		for call in tempCalls:
+			print("calling from mainloop")
+			print(call)
+			print("="*8)
+			call()
 		with canvas(disp) as draw:
 			draw.rectangle(disp.bounding_box, outline="white")
 			draw.rectangle((0, dispHeight, dispWidth, dispHeight - 8), outline="white", fill="white")
 			centerText(draw, po(0,40)[1], "{}/{}".format(currentPage+1, len(appList)), "black", font)
-			appList[currentPage].render(draw, font)
-		sleep(0.5)
+
+			appList[currentPage].render(draw)
+
+		sleep(appList[currentPage].renderDelay or gVariables["gSDelay"])
 
 
 if __name__ == "__main__":
