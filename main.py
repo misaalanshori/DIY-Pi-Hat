@@ -33,82 +33,82 @@ appList = []
 currentPage = 0
 
 gVariables = {
-	"gSDelay": 0.033
+    "gSDelay": 0.033
 }
 
 mainLoopCallbacks = set()
 
 def initApps():
-	global appList
-	appListTemp = []
-	for i in apps.appList:
-		appListTemp.append(i(disp, gVariables, font, bPool))
-	appList = appListTemp
+    global appList
+    appListTemp = []
+    for i in apps.appList:
+        appListTemp.append(i(disp, gVariables, font, bPool))
+    appList = appListTemp
 
 
 def reloadApps():
-	global apps
-	apps = importlib.reload(apps)
-	initApps()
+    global apps
+    apps = importlib.reload(apps)
+    initApps()
 
 def menuNext():
-	global currentPage
-	if currentPage + 1 == len(appList):
-		currentPage = 0
-	else:
-		currentPage += 1
+    global currentPage
+    if currentPage + 1 == len(appList):
+        currentPage = 0
+    else:
+        currentPage += 1
 
 def menuPrev():
-	global currentPage
-	if currentPage - 1 < 0:
-		currentPage = len(appList) - 1
-	else:
-		currentPage -= 1
+    global currentPage
+    if currentPage - 1 < 0:
+        currentPage = len(appList) - 1
+    else:
+        currentPage -= 1
 
 def joinApp():
-	appList[currentPage].joinApp()
+    appList[currentPage].joinApp()
 
 bPool = inout.buttonPoller({
-	"select": inout.buttonClass(buttSelect),
-	"menu": inout.buttonClass(buttMenu),
-	"up": inout.buttonClass(buttUp),
-	"down": inout.buttonClass(buttDown),
-	"left": inout.buttonClass(buttLeft),
-	"right": inout.buttonClass(buttRight),
+    "select": inout.buttonClass(buttSelect),
+    "menu": inout.buttonClass(buttMenu),
+    "up": inout.buttonClass(buttUp),
+    "down": inout.buttonClass(buttDown),
+    "left": inout.buttonClass(buttLeft),
+    "right": inout.buttonClass(buttRight),
 })
 
 bPool.update({
-	"left": {"pressCall": menuPrev},
-	"right": {"pressCall": menuNext},
-	"menu": {"holdCall": backlight.toggle},
-	"down": {"holdCall": reloadApps},
-	"select": {"pressCall": [joinApp]},
+    "left": {"pressCall": menuPrev},
+    "right": {"pressCall": menuNext},
+    "menu": {"holdCall": backlight.toggle},
+    "down": {"holdCall": reloadApps},
+    "select": {"pressCall": [joinApp]},
 })
 
 bPool.setOriginal()
 
 initApps()
 def main():
-	while True:
-		tempCalls = bPool.mainLoopCallbackBuffer.copy()
-		bPool.mainLoopCallbackBuffer.clear()
-		for call in tempCalls:
-			print("calling from mainloop")
-			print(call)
-			print("="*8)
-			call()
-		with canvas(disp) as draw:
-			draw.rectangle(disp.bounding_box, outline="white")
-			draw.rectangle((0, dispHeight, dispWidth, dispHeight - 8), outline="white", fill="white")
-			centerText(draw, po(0,40)[1], "{}/{}".format(currentPage+1, len(appList)), "black", font)
+    while True:
+        tempCalls = bPool.mainLoopCallbackBuffer.copy()
+        bPool.mainLoopCallbackBuffer.clear()
+        for call in tempCalls:
+            print("calling from mainloop")
+            print(call)
+            print("="*8)
+            call()
+        with canvas(disp) as draw:
+            draw.rectangle(disp.bounding_box, outline="white")
+            draw.rectangle((0, dispHeight, dispWidth, dispHeight - 8), outline="white", fill="white")
+            centerText(draw, po(0,40)[1], "{}/{}".format(currentPage+1, len(appList)), "black", font)
 
-			appList[currentPage].render(draw)
+            appList[currentPage].render(draw)
 
-		sleep(appList[currentPage].renderDelay or gVariables["gSDelay"])
+        sleep(appList[currentPage].renderDelay or gVariables["gSDelay"])
 
 
 if __name__ == "__main__":
-	try:
-		main()
-	except KeyboardInterrupt:
-		exit()
+    try:
+        main()
+    except KeyboardInterrupt:
+        exit()
