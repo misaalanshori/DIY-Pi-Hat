@@ -57,6 +57,7 @@ class netInfo(classes.baseApp):
         self.menu = {
             
         }
+        self.hostInterface = 0
 
         self.updateIfcfg()
 
@@ -80,6 +81,8 @@ class netInfo(classes.baseApp):
                 if self.interfaces[i]["inet"] == socket.gethostbyname(hostname):
                     self.hostInterface = i
 
+    def refresh(self):
+        self.updateIfcfg()
 
 
 

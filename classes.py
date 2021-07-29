@@ -15,7 +15,8 @@ class baseApp:
         pass
 
     def internalRender(self):
-        self.appJoined = False
+        self.appJoined = False # Undoes the join app, as placeholder for the app. replace this with subclass internal render
+        self.buttonPool.resetCallbacks()
         
     def joinApp(self):
         self.appJoined = True
@@ -27,6 +28,9 @@ class baseApp:
     def leaveApp(self):
         self.buttonPool.resetCallbacks()
         self.appJoined = False
+    
+    def refresh(self):
+        pass
 
 
 # class appMenu:

@@ -7,6 +7,7 @@ import copy
 
 wiringpi.wiringPiSetupGpio()
 
+# Class for pins to be toggled
 class togglePin:
     def __init__(self, pinNum):
         self.pinNum = pinNum

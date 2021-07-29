@@ -3,6 +3,7 @@ dispHeight = 48
 dispRotation = 2
 dispContrast = 60
 
+# Display GPIO Pins and SPI Ports
 dispPort = 0
 dispDev = 0
 dispDC = 23
